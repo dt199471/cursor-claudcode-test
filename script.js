@@ -1,4 +1,22 @@
+// 認証関連
+const loginContainer = document.getElementById('loginContainer');
+const todoContainer = document.getElementById('todoContainer');
+const loginForm = document.getElementById('loginForm');
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+const loginError = document.getElementById('loginError');
+const userDisplay = document.getElementById('userDisplay');
+const logoutBtn = document.getElementById('logoutBtn');
+
+// デモ用のユーザー情報（実際のアプリではサーバー側で管理）
+const DEMO_USERS = {
+    'admin': 'admin123',
+    'user': 'user123',
+    'demo': 'demo123'
+};
+
 let todos = JSON.parse(localStorage.getItem('todos')) || [];
+let currentUser = localStorage.getItem('currentUser');
 
 const todoInput = document.getElementById('todoInput');
 const addBtn = document.getElementById('addBtn');
@@ -89,4 +107,54 @@ todoInput.addEventListener('keypress', (e) => {
 
 clearCompletedBtn.addEventListener('click', clearCompleted);
 
-renderTodos();
+// 認証関連の関数
+function handleLogin(e) {
+    e.preventDefault();
+
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+
+    if (DEMO_USERS[username] && DEMO_USERS[username] === password) {
+        currentUser = username;
+        localStorage.setItem('currentUser', username);
+        showTodoApp();
+        loginError.textContent = '';
+        usernameInput.value = '';
+        passwordInput.value = '';
+    } else {
+        loginError.textContent = 'ユーザー名またはパスワードが正しくありません';
+    }
+}
+
+function handleLogout() {
+    currentUser = null;
+    localStorage.removeItem('currentUser');
+    showLoginPage();
+}
+
+function showLoginPage() {
+    loginContainer.style.display = 'block';
+    todoContainer.style.display = 'none';
+}
+
+function showTodoApp() {
+    loginContainer.style.display = 'none';
+    todoContainer.style.display = 'block';
+    userDisplay.textContent = `ようこそ、${currentUser}さん`;
+    renderTodos();
+}
+
+function checkAuth() {
+    if (currentUser) {
+        showTodoApp();
+    } else {
+        showLoginPage();
+    }
+}
+
+// イベントリスナー
+loginForm.addEventListener('submit', handleLogin);
+logoutBtn.addEventListener('click', handleLogout);
+
+// 初期化
+checkAuth();
